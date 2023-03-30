@@ -1,0 +1,16 @@
+    Custom1 = Table.AddColumn(#"Appended Query", "Assessments", each if [Assessment] = "High" then [Assessment] else if [Assessment] = "Medium" then [Assessment] else if [Assessment] = "Low" then [Assessment] else null),
+    #"Filtered Rows" = Table.SelectRows(Custom1, each [Assessments] <> null and [Assessments] <> ""),
+    #"Removed Columns" = Table.RemoveColumns(#"Filtered Rows",{"Assessments"}),
+    #"Merged Queries" = Table.NestedJoin(#"Removed Columns", {"Engagement Code"}, #"4 - Engagement_Lookup", {"Engagament Code"}, "4 - Engagement_Lookup", JoinKind.LeftOuter),
+    #"Expanded 4 - Engagement_Lookup" = Table.ExpandTableColumn(#"Merged Queries", "4 - Engagement_Lookup", {"Engagement id"}, {"Engagement id"}),
+    #"Removed Columns1" = Table.RemoveColumns(#"Expanded 4 - Engagement_Lookup",{"Engagement Client", "Engagement Name", "Engagement Code", "Engagement Partner"}),
+    #"Merged Queries1" = Table.NestedJoin(#"Removed Columns1", {"Meeting Date"}, #"1 - Meeting_Date_Lookup", {"Meeting Date"}, "1 - Meeting_Date_Lookup", JoinKind.LeftOuter),
+    #"Expanded 1 - Meeting_Date_Lookup" = Table.ExpandTableColumn(#"Merged Queries1", "1 - Meeting_Date_Lookup", {"Meeting Date id"}, {"Meeting Date id"}),
+    #"Removed Columns2" = Table.RemoveColumns(#"Expanded 1 - Meeting_Date_Lookup",{"Meeting Date"}),
+    #"Merged Queries2" = Table.NestedJoin(#"Removed Columns2", {"Key Risk"}, #"2 - Risk_Group_Lookup", {"Key Risk"}, "2 - Risk_Group_Lookup", JoinKind.LeftOuter),
+    #"Expanded 2 - Risk_Group_Lookup" = Table.ExpandTableColumn(#"Merged Queries2", "2 - Risk_Group_Lookup", {"Risk - Topic - Key Risk id"}, {"Risk - Topic - Key Risk id"}),
+    #"Removed Columns3" = Table.RemoveColumns(#"Expanded 2 - Risk_Group_Lookup",{"Key Risk"}),
+    #"Merged Queries3" = Table.NestedJoin(#"Removed Columns3", {"Assessment"}, #"3 - Assessment_Level_Lookup", {"Assessment Level"}, "3 - Assessment_Level_Lookup", JoinKind.LeftOuter),
+    #"Expanded 3 - Assessment_Level_Lookup" = Table.ExpandTableColumn(#"Merged Queries3", "3 - Assessment_Level_Lookup", {"Assessment Level id"}, {"Assessment Level id"})
+in
+    #"Expanded 3 - Assessment_Level_Lookup"
