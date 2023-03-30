@@ -1,0 +1,15 @@
+    #"Added Conditional Column" = Table.AddColumn(#"Appended Query", "Comments", each if [Assessment] = "High" then null else if [Assessment] = "Medium" then null else if [Assessment] = "Low" then null else [Assessment]),
+    #"Filtered Rows" = Table.SelectRows(#"Added Conditional Column", each [Comments] <> null and [Comments] <> ""),
+    #"Renamed Columns" = Table.RenameColumns(#"Filtered Rows",{{"Comments", "Comment"}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Renamed Columns",{"Assessment"}),
+    #"Merged Queries" = Table.NestedJoin(#"Removed Columns", {"Engagement Code"}, #"4 - Engagement_Lookup", {"Engagament Code"}, "4 - Engagement_Lookup", JoinKind.LeftOuter),
+    #"Expanded 4 - Engagement_Lookup" = Table.ExpandTableColumn(#"Merged Queries", "4 - Engagement_Lookup", {"Engagement id"}, {"Engagement id"}),
+    #"Removed Columns1" = Table.RemoveColumns(#"Expanded 4 - Engagement_Lookup",{"Engagement Client", "Engagement Name", "Engagement Code", "Engagement Partner"}),
+    #"Merged Queries1" = Table.NestedJoin(#"Removed Columns1", {"Meeting Date"}, #"1 - Meeting_Date_Lookup", {"Meeting Date"}, "1 - Meeting_Date_Lookup", JoinKind.LeftOuter),
+    #"Expanded 1 - Meeting_Date_Lookup" = Table.ExpandTableColumn(#"Merged Queries1", "1 - Meeting_Date_Lookup", {"Meeting Date id"}, {"Meeting Date id"}),
+    #"Removed Columns2" = Table.RemoveColumns(#"Expanded 1 - Meeting_Date_Lookup",{"Meeting Date"}),
+    #"Merged Queries2" = Table.NestedJoin(#"Removed Columns2", {"Key Risk"}, #"2 - Risk_Group_Lookup", {"Key Risk"}, "2 - Risk_Group_Lookup", JoinKind.LeftOuter),
+    #"Expanded 2 - Risk_Group_Lookup" = Table.ExpandTableColumn(#"Merged Queries2", "2 - Risk_Group_Lookup", {"Risk - Topic - Key Risk id"}, {"Risk - Topic - Key Risk id"}),
+    #"Removed Columns3" = Table.RemoveColumns(#"Expanded 2 - Risk_Group_Lookup",{"Key Risk"})
+in
+    #"Removed Columns3"
